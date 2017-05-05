@@ -5,30 +5,31 @@
 #ifndef REVERSICPP_REMOTESERVER_H
 #define REVERSICPP_REMOTESERVER_H
 
-#include <ios>
+#include <iostream>
 #include <string>
 #include <boost/asio.hpp>
 
 using namespace boost::asio;
 
 using std::string;
+using std::pair;
 
 enum class GameStatus {
-    WIN, LOSE, DRAW, TURN
+    WIN, LOSE, DRAW, TURN, MOVE
 };
 
 class GameTurn {
 
-    std::pair<char, int> turn;
+    std::pair<int, int> turn;
 
     GameStatus status;
 
 public:
 
-    GameTurn() { }
+    GameTurn() {}
 
-    GameTurn(char x, int y) {
-        status = GameStatus::TURN;
+    GameTurn(int x, int y) {
+        status = GameStatus::MOVE;
         turn = std::make_pair(x, y);
     }
 
@@ -40,7 +41,7 @@ public:
         return status;
     }
 
-    std::pair<char, int> getTurn() const {
+    pair<int, int> getTurn() const {
         return turn;
     }
 };
@@ -53,7 +54,7 @@ class RemoteServer {
         int res = 0;
         unsigned char chr;
         for (int i = 0; i < 4; i++) {
-            stream >> chr;
+            chr = (unsigned char)stream.get();
             res = (res << 8) + chr;
         }
         return res;
@@ -64,7 +65,7 @@ class RemoteServer {
         char chr;
         string s;
         for (int i = 0; i < length; i++) {
-            stream >> chr;
+            chr = (unsigned char)stream.get();
             s += chr;
         }
         return s;
@@ -76,10 +77,14 @@ class RemoteServer {
             chr[3 - i] = (char) (value % 256);
             value >>= 8;
         }
-        stream << chr;
+        for (int i = 0; i < 4; i++) {
+            stream << chr[i];
+        }
     }
 
     void writeString(string s) {
+        std::cout << s << std::endl;
+
         writeInteger((int) s.length());
         stream << s;
     }
@@ -100,6 +105,33 @@ public:
         writeString(id);
     }
 
+    string readInit() {
+        std::vector<string> v;
+        string s = readString();
+        s += ' ';
+        string curString = "";
+        for (char chr : s) {
+            if (chr != ' ') {
+                curString += chr;
+            } else {
+                v.push_back(curString);
+                curString = "";
+            }
+        }
+
+        if (v.size() == 2 && v[0] == "init") {
+            if (v[1] == "white" || v[1] == "black") {
+                return v[1];
+            }  else {
+                assert(false);
+            }
+        } else {
+            assert(false);
+        }
+
+        return readString();
+    }
+
     GameTurn readTurn() {
         string s = readString();
         std::vector<string> v;
@@ -115,25 +147,31 @@ public:
         }
 
         if (v.size() == 1) {
-            if (v[0] == "WIN") {
+            string option = v.front();
+
+            if (option == "win") {
                 return GameStatus::WIN;
-            } else if (v[0] == "DRAW") {
+            } else if (option == "draw") {
                 return GameStatus::DRAW;
-            } else if (v[1] == "LOSE") {
+            } else if (option == "lose") {
                 return GameStatus::LOSE;
+            } else if (option == "turn") {
+                return GameStatus::TURN;
             } else {
                 assert(false);
             }
         }
 
         assert(v.size() == 3 && v[0] == "move" && v[1].length() == 1);
-        assert(v[1] >= "a" && v[1] <= "h");
+        assert(v[2] >= "a" && v[2] <= "h");
 
-        return {v[1][0], parseInt(v[2])};
+        return {parseInt(v[1]), v[2][0] - 'a'};
     }
 
-    void sendTurn(std::pair<char, int> turn) {
-        string s = "move " + std::to_string(turn.first) + " " + std::to_string(turn.second);
+    void sendTurn(std::pair<int, int> turn) {
+        string s = "move ";
+        s += std::to_string(turn.first) + " ";
+        s += turn.second + 'a';
         writeString(s);
     }
 };

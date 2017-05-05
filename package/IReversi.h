@@ -7,11 +7,16 @@
 #define REVERSICPP_IREVERSI_H
 
 #include <utility>
+#include <vector>
+#include "../World.h"
+
+using std::pair;
+using std::vector;
 
 class IReversi {
 public:
     IReversi() { }
-    virtual std::pair<char, int> move(std::pair<char, int> opponentMove) = 0;
+    virtual pair<int, int> move(const World& world) = 0;
     virtual ~IReversi() { }
 };
 

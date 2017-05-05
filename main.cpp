@@ -1,5 +1,4 @@
 #include "Runner.h"
-#include <string>
 
 int main(int argc, char** argv) {
 
@@ -10,7 +9,11 @@ int main(int argc, char** argv) {
         Runner runner(argv[1], argv[2], argv[3], argv[4]);
         runner.run();
     } else {
-        assert(false);
+
+        const char *id = "1";
+        Runner runner("127.0.0.1", "4242", "", id);
+        runner.run();
+//        assert(false);
     }
 
     return 0;

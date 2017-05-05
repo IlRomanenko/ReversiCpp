@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.7)
+cmake_minimum_required(VERSION 3.5)
 project(ReversiCpp)
 
 set(CMAKE_CXX_STANDARD 11)
@@ -8,14 +8,12 @@ include_directories(${Boost_INCLUDE_DIR})
 
 set(SOURCE_FILES
         main.cpp
-        Runner.cpp
         Runner.h
-        RemoteServer.cpp
         RemoteServer.h
         package/Reversi.cpp
         package/Reversi.h
         package/IReversi.h
-        )
+        World.h)
 
 add_executable(ReversiCpp ${SOURCE_FILES})
 
