@@ -3,7 +3,7 @@ project(ReversiCpp)
 
 set(CMAKE_CXX_STANDARD 11)
 
-find_package(Boost COMPONENTS system filesystem REQUIRED)
+find_package(Boost COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIR})
 
 set(SOURCE_FILES
@@ -18,5 +18,5 @@ set(SOURCE_FILES
 add_executable(ReversiCpp ${SOURCE_FILES})
 
 link_directories(${Boost_LIBRARY_DIR})
-target_link_libraries( ReversiCpp ${Boost_LIBRARIES} pthread)
+target_link_libraries(ReversiCpp ${Boost_LIBRARIES} pthread)
 
